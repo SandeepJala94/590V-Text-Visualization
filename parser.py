@@ -8,15 +8,26 @@ def removeEndingNonLetter(word):
 
 	return word.lower()
 
+def printTextFileByParagraph(myList):
+	paragraphCount = 1
+	for paragraph in myList:
+		print(paragraphCount, ") ", paragraph)
+		paragraphCount = paragraphCount+1
+
+def printDict(myDict):
+	lineCount=1
+	for key in myDict.keys():
+		print(lineCount, " ", key, " ", myDict[key])
+		lineCount = lineCount+1
+
+
+
 f = open("PsychologyOfLinguisticForm.txt","r")
 myList = []
 for line in f:
     myList.append(line)
 
-lineCount = 1
-for line in myList:
-	print(lineCount, ") ", line)
-	lineCount = lineCount+1
+printTextFileByParagraph(myList)
 
 wordFreDict = {}
 for line in myList:
@@ -27,14 +38,13 @@ for line in myList:
 		else:
 			wordFreDict[newWord] = 1
 
-for key in wordFreDict.keys():
-	print(key, " ", wordFreDict[key])
+printDict(wordFreDict)
 
 # with open('dict.csv', 'wb') as csv_file:
 #     writer = csv.writer(csv_file)
 #     for key, value in wordFreDict.items():
 #        writer.writerow([value])
 
-outfile = open( 'dict.txt', 'w' )
-for key, value in sorted( wordFreDict.items() ):
-    outfile.write( str(key) + ',\t' + str(value) + '\n' )
+# outfile = open( 'dict.txt', 'w' )
+# for key, value in sorted( wordFreDict.items() ):
+#     outfile.write( str(key) + ',\t' + str(value) + '\n' )
