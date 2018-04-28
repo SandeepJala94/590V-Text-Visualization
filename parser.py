@@ -10,6 +10,14 @@ def seriesOfReplacements(myLine):
 	tempLine = tempLine.replace(":", " ")
 	tempLine = tempLine.replace(";", " ")
 	tempLine = tempLine.replace("?", " ")
+	tempLine = tempLine.replace("(", " ")
+	tempLine = tempLine.replace(")", " ")
+	tempLine = tempLine.replace("{", " ")
+	tempLine = tempLine.replace("}", " ")
+	tempLine = tempLine.replace("[", " ")
+	tempLine = tempLine.replace("]", " ")
+	tempLine = tempLine.replace("\"", " ")
+	tempLine = tempLine.replace("'", " ")
 	return tempLine
 
 def isLetter(myChar):
@@ -60,7 +68,6 @@ for line in f:
     myList.append(line)
 
 #printTextFileByParagraph(myList)
-
 wordFreDict = {}
 lineCount = 1
 for line in myList:
@@ -87,3 +94,8 @@ printDict(wordFreDict)
 outfile = open( 'dict.txt', 'w' )
 for key in wordFreDict.keys():
 	outfile.write(key + ', ' + str(wordFreDict[key]) + '\n' )
+
+outfile2 = open('allWords.txt', 'w')
+for key in wordFreDict.keys():
+	#outfile2.write("{\"text\" : \"" + key + "\"},")
+	outfile2.write("\"" + key + "\",")
