@@ -60,7 +60,10 @@ for line in f:
     myList.append(line)
 
 #printTextFileByParagraph(myList)
-
+commonWordsToIgnore = ["a", "also", "an", "and", "are", "as", "at", "be", "but", "by", "for", "from",
+					   "each", "has", "he", "however", "in", "into", "is", "it", "its", "of", "on", "or",
+					   "that", "the", "to", "this", "they",
+					   "was", "were", "with", "with"]
 wordFreDict = {}
 lineCount = 1
 for line in myList:
@@ -72,10 +75,11 @@ for line in myList:
 		#tempWord = seriesOfReplacements(word)
 		#newWord = removeEndingNonLetter(temp)
 		newWord = word.lower()
-		if newWord in wordFreDict.keys():
-			wordFreDict[newWord] = wordFreDict[newWord] + 1
-		else:
-			wordFreDict[newWord] = 1
+		if newWord not in commonWordsToIgnore:
+			if newWord in wordFreDict.keys():
+				wordFreDict[newWord] = wordFreDict[newWord] + 1
+			else:
+				wordFreDict[newWord] = 1
 
 printDict(wordFreDict)
 
@@ -84,6 +88,6 @@ printDict(wordFreDict)
 #     for key, value in wordFreDict.items():
 #        writer.writerow([value])
 
-outfile = open( 'dict.txt', 'w' )
+outfile = open( 'dict2.txt', 'w' )
 for key in wordFreDict.keys():
 	outfile.write(key + ', ' + str(wordFreDict[key]) + '\n' )

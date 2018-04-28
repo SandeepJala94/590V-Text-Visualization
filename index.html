@@ -5,6 +5,20 @@
     <title>Linguistics Document Text Visualization</title>
   </head>
   <script src="https://d3js.org/d3.v4.min.js"></script>
+  <style media="screen">
+    div.tooltip {
+      position: absolute;
+      text-align: center;
+      width: 130px;
+      height: 75px;
+      padding: 2px;
+      font: 12px sans-serif;
+      background: lightsteelblue;
+      border: 0px;
+      border-radius: 8px;
+      pointer-events: none;
+    }
+  </style>
   <body>
     <svg width="1060" height="1060" id="svgOne"font-family="sans-serif" font-size="10" text-anchor="middle"></svg>
     <br>
@@ -16,11 +30,17 @@
 
   <script>
 
-    var currentRadiusChange = 0, currentColorScheme=d3.schemeCategory20;
-    drawBubbleChart(0, d3.schemeCategory20)
+    var currentRadiusChange = 0, currentColorScheme=d3.schemeCategory20, currentCSV = "dict.csv";
+
+    var div = d3.select("body")
+                  .append("div")
+                  .attr("class", "tooltip")
+                  .style("opacity", 0);
+
+    drawBubbleChart(0, d3.schemeCategory20, currentCSV)
     drawButtonGroups()
 
-    function drawBubbleChart(givenRadiusChange, givenColorScheme){
+    function drawBubbleChart(givenRadiusChange, givenColorScheme, givenCSV){
       var svg = d3.select("#svgOne"),
           width = +svg.attr("width"),
           height = +svg.attr("height");
@@ -33,7 +53,7 @@
           .size([width, height])
           .padding(1.5);
 
-      d3.csv("dict.csv", function(d) {
+      d3.csv(givenCSV, function(d) {
         d.value = +d.value;
         if (d.value) return d;
       }, function(error, classes) {
@@ -66,6 +86,22 @@
                 return givenRadiusChange/d.r;
               }
             })
+            .on("mouseover", function(d){
+              div.transition()
+                      .duration(200)
+                      .style("opacity", .9);
+
+              div	.html("There were " + d.value + "<br>" +
+                        "occurences of the word '" + d.id + "' <br>" +
+                        "in THE PSYCHOLOGY OF LINGUISTIC FORM")
+                      .style("left", (d3.event.pageX) + "px")
+                      .style("top", (d3.event.pageY - 28) + "px");
+            })
+            .on("mouseout", function(d){
+              div.transition()
+                    .duration(200)
+                    .style("opacity", 0);
+            })
             .style("fill", function(d) { return color(d.package); });
 
         node.append("clipPath")
@@ -81,9 +117,6 @@
             .attr("x", 0)
             .attr("y", function(d, i, nodes) { return 13 + (i - nodes.length / 2 - 0.5) * 10; })
             .text(function(d) { return d; });
-
-        node.append("title")
-            .text(function(d) { return d.id + "\n" + format(d.value); });
       });
     }
 
@@ -139,7 +172,7 @@
       console.log("went into changeRadius() with " + this.value);
       currentRadiusChange = this.value;
       d3.select("#svgOne").selectAll("*").remove();
-      drawBubbleChart(currentRadiusChange, currentColorScheme);
+      drawBubbleChart(currentRadiusChange, currentColorScheme, currentCSV);
     }
 
     function changeColor(){
@@ -154,11 +187,14 @@
         currentColorScheme = d3.schemeCategory20c;
       }
       d3.select("#svgOne").selectAll("*").remove();
-      drawBubbleChart(currentRadiusChange, currentColorScheme)
+      drawBubbleChart(currentRadiusChange, currentColorScheme, currentCSV);
     }
 
     function changeCSV(){
-
+      console.log("Went into changeCSV() with " + this.value);
+      currentCSV = this.value;
+      d3.select("#svgOne").selectAll("*").remove();
+      drawBubbleChart(currentRadiusChange, currentColorScheme, currentCSV);
     }
   </script>
 
