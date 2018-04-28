@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Linguistics Document Text Visualization</title>
+  </head>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <body>
+    <svg width="1060" height="1060" id="svgOne"font-family="sans-serif" font-size="10" text-anchor="middle"></svg>
+    <br>
+    <g id="svgOneButtonGroups"></g>
+    <br>
+    <svg width="1060" height="1060" id="svgTwo"font-family="sans-serif" font-size="10" text-anchor="middle"></svg>
+    <br>
+  </body>
+
+  <script>
+
+    var currentRadiusChange = 0, currentColorScheme=d3.schemeCategory20;
+    drawBubbleChart(0, d3.schemeCategory20)
+    drawButtonGroups()
+
+    function drawBubbleChart(givenRadiusChange, givenColorScheme){
+      var svg = d3.select("#svgOne"),
+          width = +svg.attr("width"),
+          height = +svg.attr("height");
+
+      var format = d3.format(",d");
+
+      var color = d3.scaleOrdinal(givenColorScheme);
+
+      var pack = d3.pack()
+          .size([width, height])
+          .padding(1.5);
+
+      d3.csv("dict.csv", function(d) {
+        d.value = +d.value;
+        if (d.value) return d;
+      }, function(error, classes) {
+        if (error) throw error;
+
+        var root = d3.hierarchy({children: classes})
+            .sum(function(d) { return d.value; })
+            .each(function(d) {
+              if (id = d.data.id) {
+                var id, i = id.lastIndexOf(".");
+                d.id = id;
+                d.package = id.slice(0, i);
+                d.class = id.slice(i + 1);
+              }
+            });
+
+        var node = svg.selectAll(".node")
+          .data(pack(root).leaves())
+          .enter().append("g")
+            .attr("class", "node")
+            .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+
+        node.append("circle")
+            .attr("id", function(d) { return d.id; })
+            .attr("r", function(d) {
+              if(givenRadiusChange == 0){
+                return d.r;
+              }
+              else{
+                return givenRadiusChange/d.r;
+              }
+            })
+            .style("fill", function(d) { return color(d.package); });
+
+        node.append("clipPath")
+            .attr("id", function(d) { return "clip-" + d.id; })
+          .append("use")
+            .attr("xlink:href", function(d) { return "#" + d.id; });
+
+        node.append("text")
+            .attr("clip-path", function(d) { return "url(#clip-" + d.id + ")"; })
+          .selectAll("tspan")
+          .data(function(d) { return d.class.split(/(?=[A-Z][^A-Z])/g); })
+          .enter().append("tspan")
+            .attr("x", 0)
+            .attr("y", function(d, i, nodes) { return 13 + (i - nodes.length / 2 - 0.5) * 10; })
+            .text(function(d) { return d; });
+
+        node.append("title")
+            .text(function(d) { return d.id + "\n" + format(d.value); });
+      });
+    }
+
+    function drawButtonGroups(){
+      var svgOneButtonGroups = d3.select("#svgOneButtonGroups")
+
+      var radiusOptions = [0, 1, 10, 25, 50, 75, 100, 125, 150];
+      var radiusGroup = svgOneButtonGroups.append("g").attr("id", "radiusGroup");
+      var radiusSpan = radiusGroup.append("span").text("Change Radius ");
+      var radiusDropDownMenu = radiusGroup.append('select')
+                                  .attr("id", "radiusDropDownMenu")
+                                    .on("change", changeRadius)
+                                  .selectAll("option")
+                                    .data(radiusOptions)
+                                    .enter()
+                                  .append('option')
+                                    .attr('value', function (d) {return d})
+                                    .text(function (d) { return d});
+      radiusGroup.append("br");
+
+
+      var colorSchemeOptions = [{"text":"d3.schemeCategory20"}, {"text":"d3.schemeCategory20b"}, {"text":"d3.schemeCategory20c"}];
+      var colorGroup = svgOneButtonGroups.append("g").attr("id", "colorGroup");
+      var colorSpan  = colorGroup.append("span").text("Change Color Scheme ");
+      var colorDropDownMenu = colorGroup.append('select')
+                                  .attr("id", "colorDropDownMenu")
+                                    .on("change", changeColor)
+                                  .selectAll("option")
+                                    .data(colorSchemeOptions)
+                                    .enter()
+                                  .append('option')
+                                    .attr('value', function (d) {return d.text})
+                                    .text(function (d) { return d.text});
+      colorGroup.append("br");
+
+
+      var csvOptions = [{"text":"dict.csv"}, {"text":"dict2.csv"}];
+      var csvGroup = svgOneButtonGroups.append("g").attr("id", "datasetGroup");
+      var csvSpan = csvGroup.append("span").text("Change csv ");
+      var csvDropDownMeny = csvGroup.append('select')
+                                  .attr("id", "csvDropDownMenu")
+                                    .on("change", changeCSV)
+                                  .selectAll("option")
+                                    .data(csvOptions)
+                                    .enter()
+                                  .append('option')
+                                    .attr('value', function (d) {return d.text})
+                                    .text(function (d) { return d.text});
+      csvGroup.append("br");
+    }
+
+    function changeRadius(){
+      console.log("went into changeRadius() with " + this.value);
+      currentRadiusChange = this.value;
+      d3.select("#svgOne").selectAll("*").remove();
+      drawBubbleChart(currentRadiusChange, currentColorScheme);
+    }
+
+    function changeColor(){
+      console.log("Went into changeColor() with " + this.value);
+      if(this.value == "d3.schemeCategory20"){
+        currentColorScheme = d3.schemeCategory20;
+      }
+      else if (this.value == "d3.schemeCategory20b") {
+        currentColorScheme = d3.schemeCategory20b;
+      }
+      else {//this.value == "d3.schemeCategory20c"
+        currentColorScheme = d3.schemeCategory20c;
+      }
+      d3.select("#svgOne").selectAll("*").remove();
+      drawBubbleChart(currentRadiusChange, currentColorScheme)
+    }
+
+    function changeCSV(){
+
+    }
+  </script>
+
+
+</html>
